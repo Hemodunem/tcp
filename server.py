@@ -16,11 +16,11 @@ def handle_client(name, conn, addr):
 
         print(name + ': ' + data.decode("utf8"))
 
-        for clientName, client in clients.items():
+        for client in clients.values():
             if client == conn:
                 continue
 
-            message = clientName + ': ' + data.decode("utf8")
+            message = name + ': ' + data.decode("utf8")
             client.send(bytes(message, "utf8"))
 
 

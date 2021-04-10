@@ -1,9 +1,7 @@
 from threading import Thread
-import keyboard
 
 from PyQt5 import uic, QtWidgets
 from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox
-from PyQt5.uic.properties import QtCore
 
 from client import connect
 
