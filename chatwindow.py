@@ -1,7 +1,9 @@
 from threading import Thread
+import keyboard
 
 from PyQt5 import uic, QtWidgets
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox
+from PyQt5.uic.properties import QtCore
 
 from client import connect
 
@@ -12,11 +14,20 @@ class App(QtWidgets.QMainWindow, Form):
         super(App, self).__init__()
         self.setupUi(self)
         self.send.clicked.connect(self.on_click)
+        self.message.returnPressed.connect(self.on_click)
 
-        self.sock = connect()
-        self.lines = []
-        thread = Thread(target=self.handle_chat)
-        thread.start()
+        name, ok = QInputDialog.getText(self, 'Input Dialog', 'Enter your name:')
+        if ok:
+            self.sock = connect(name)
+            self.lines = []
+            thread = Thread(target=self.handle_chat)
+            thread.start()
+        else:
+            Box = QMessageBox()
+            Box.setText('Ухади')
+            Box.exec()
+
+            quit()
 
     def handle_chat(self):
         while True:
@@ -29,6 +40,7 @@ class App(QtWidgets.QMainWindow, Form):
         self.sock.send(bytes(message, 'utf8'))
         self.lines.append("Вы: " + message)
         self.show_lines()
+        self.message.setText('')
 
     def show_lines(self):
         self.chat.clear()
