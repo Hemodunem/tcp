@@ -1,38 +1,53 @@
 import socket
 from threading import Thread
 
-sock = socket.socket()
-sock.bind(('0.0.0.0', 5555))
+server_name = input("Name: ")
+
+
+def share_info():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.bind(("0.0.0.0", 5555))
+    print("Server started")
+
+    while True:
+        m, addr = sock.recvfrom(4096)
+        sock.sendto(bytes(server_name, "utf8"), addr)
+
+
+thread = Thread(target=share_info)
+thread.start()
+
+
+def handle_client(client_name, client_sock):
+    try:
+        while True:
+            data = client_sock.recv(1024)
+            if not data:
+                break
+
+            print(client_name + ': ' + data.decode("utf8"))
+
+            for client in clients.values():
+                if client == client_sock:
+                    continue
+
+                message = client_name + ': ' + data.decode("utf8")
+                client.send(bytes(message, "utf8"))
+    except socket.error:
+        print(client_name, "disconnected")
+
+
+server = socket.socket()
+server.bind(('0.0.0.0', 5555))
 clients = {}
 
-print("Server started")
-
-
-def handle_client(name, conn, addr):
-    while True:
-        data = conn.recv(1024)
-        if not data:
-            break
-
-        print(name + ': ' + data.decode("utf8"))
-
-        for client in clients.values():
-            if client == conn:
-                continue
-
-            message = name + ': ' + data.decode("utf8")
-            client.send(bytes(message, "utf8"))
-
-
 while True:
-    print("waiting for connections")
-    sock.listen()
-    conn, addr = sock.accept()
+    server.listen()
+    conn, address = server.accept()
 
     name = conn.recv(1024).decode('utf8')
 
     clients[name] = conn
 
-    print('connected:', addr, name)
-    Thread(target=handle_client, args=[name, conn, addr]).start()
-
+    print(name, "connected")
+    Thread(target=handle_client, args=[name, conn, address]).start()
