@@ -2,7 +2,7 @@ import socket
 from threading import Thread
 
 sock = socket.socket()
-sock.bind(('192.168.20.71', 5555))
+sock.bind(('0.0.0.0', 5555))
 clients = {}
 
 print("Server started")
@@ -33,6 +33,6 @@ while True:
 
     clients[name] = conn
 
-    print('connected:', addr)
+    print('connected:', addr, name)
     Thread(target=handle_client, args=[name, conn, addr]).start()
 
