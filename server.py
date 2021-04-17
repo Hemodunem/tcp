@@ -9,6 +9,7 @@ def share_info():
     sock.bind(("0.0.0.0", 5555))
     print("Server started")
 
+
     while True:
         m, addr = sock.recvfrom(4096)
         sock.sendto(bytes(server_name, "utf8"), addr)
