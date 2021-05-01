@@ -1,22 +1,7 @@
 import socket
 from threading import Thread
 
-server_name = input("Name: ")
-
-
-def share_info():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.bind(("0.0.0.0", 5555))
-    print("Server started")
-
-
-    while True:
-        m, addr = sock.recvfrom(4096)
-        sock.sendto(bytes(server_name, "utf8"), addr)
-
-
-thread = Thread(target=share_info)
-thread.start()
+from packet_manager import unserialize, serialize
 
 
 def handle_client(client_name, client_sock):
@@ -26,29 +11,63 @@ def handle_client(client_name, client_sock):
             if not data:
                 break
 
-            print(client_name + ': ' + data.decode("utf8"))
+            try:
+                packet = unserialize(data)
+                packet_type = packet["type"]
+                payload = packet["payload"]
 
-            for client in clients.values():
-                if client == client_sock:
-                    continue
+                if packet_type == "message":
+                    print(f"[{client_name}]: " + payload["text"])
 
-                message = client_name + ': ' + data.decode("utf8")
-                client.send(bytes(message, "utf8"))
+                    send_all_except([client_sock], serialize(packet))
+            except:
+                print("[ERROR]", "Can't decode packet!")
+                print(f"[{client_name}]: " + data.decode("utf8"))
+
     except socket.error:
-        print(client_name, "disconnected")
+        print(f"[{client_name}]", "Disconnected!")
 
 
-server = socket.socket()
-server.bind(('0.0.0.0', 5555))
-clients = {}
+def send_all(packet):
+    for client in clients.values():
+        client.send(packet)
 
-while True:
-    server.listen()
-    conn, address = server.accept()
 
-    name = conn.recv(1024).decode('utf8')
+def send_all_except(exceptions, packet):
+    for client in clients.values():
+        if client in exceptions:
+            continue
 
-    clients[name] = conn
+        client.send(packet)
 
-    print(name, "connected")
-    Thread(target=handle_client, args=[name, conn, address]).start()
+
+def share_info():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.bind(("0.0.0.0", 5555))
+    print("[SERVER]", "Started!")
+
+    while True:
+        m, addr = sock.recvfrom(4096)
+        sock.sendto(bytes(server_name, "utf8"), addr)
+
+
+if __name__ == "__main__":
+    server_name = input("Name: ")
+
+    thread = Thread(target=share_info)
+    thread.start()
+
+    server = socket.socket()
+    server.bind(("0.0.0.0", 5555))
+    clients = {}
+
+    while True:
+        server.listen()
+        conn, address = server.accept()
+
+        name = conn.recv(1024).decode("utf8")
+
+        clients[name] = conn
+
+        print(f"[{name}]", "Connected!")
+        Thread(target=handle_client, args=[name, conn]).start()
