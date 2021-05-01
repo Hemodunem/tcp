@@ -27,7 +27,7 @@
      <string>Start</string>
     </property>
    </widget>
-   <widget class="QListWidget" name="clients">
+   <widget class="QListWidget" name="messages">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -47,7 +47,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QListWidget" name="listWidget">
+   <widget class="QListWidget" name="clients">
     <property name="geometry">
      <rect>
       <x>560</x>
