@@ -22,3 +22,10 @@ def message_packet(text):
             "text": text
         })
     )
+
+def file_packet():
+    return serialize(
+        packet("file", {
+
+        })
+    )

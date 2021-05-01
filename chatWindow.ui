@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>806</width>
+    <width>808</width>
     <height>585</height>
    </rect>
   </property>
@@ -30,9 +30,9 @@
    <widget class="QLineEdit" name="message">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>70</x>
       <y>550</y>
-      <width>661</width>
+      <width>601</width>
       <height>31</height>
      </rect>
     </property>
@@ -45,6 +45,19 @@
       <width>791</width>
       <height>531</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="fileButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>550</y>
+      <width>51</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Файл</string>
     </property>
    </widget>
   </widget>
