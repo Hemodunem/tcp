@@ -36,6 +36,7 @@ class ServersWindow(QtWidgets.QMainWindow, Form1):
         thread = Thread(target=find_servers, args=[self.on_find_server])
         thread.start()
 
+
     def on_click(self):
         global currentServer
         items = self.serversView.selectedItems()
@@ -88,7 +89,16 @@ class App(QtWidgets.QMainWindow, Form):
                 return
             try:
                 data = self.sock.recv(1024)
-                self.lines.append(data.decode("utf8"))
+
+                try:
+                    packet = unserialize(data)
+
+                    if packet.type == "message":
+                        self.lines.append(packet.payload.text)
+
+                except:
+                    self.lines.append(raw)
+
                 self.show_lines()
             except:
                 pass
