@@ -1,12 +1,11 @@
 import time
+from PyQt5 import uic, QtWidgets, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox, QFileDialog
 from base64 import b64encode
 from os.path import getsize
 from random import randint
 from threading import Thread
-
-from PyQt5 import uic, QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox, QFileDialog
 
 from client import connect, find_servers, stop, is_stopped
 from packet_manager import message_packet, file_packet, serialize, packet, unserialize
@@ -52,8 +51,20 @@ class ServersWindow(QtWidgets.QMainWindow, Form1):
         main_window.get_name()
 
     def show_servers(self):
-        self.serversView.clear()
-        self.serversView.addItems(self.servers.keys())
+        print("show servers")
+        last = [str(self.serversView.item(i).text()) for i in range(self.serversView.count())]
+
+        items_to_add = [server for server in self.servers.keys() if server not in last]
+        items_to_remove = [name for name in last if name not in self.servers.keys()]
+
+        for name in items_to_add:
+            self.serversView.addItem(name)
+
+        for name in items_to_remove:
+            print("remove " + name)
+            item = self.serversView.findItems(name, Qt.MatchExactly)
+            row = self.serversView.row(item)
+            self.serversView.takeItem(row)
 
 
 class App(QtWidgets.QMainWindow, Form):
@@ -72,11 +83,14 @@ class App(QtWidgets.QMainWindow, Form):
         global currentServer
         name, ok = QInputDialog.getText(self, 'Input Dialog', 'Enter your name:')
         if ok:
-            self.name = name
-            self.sock = connect(self.name, currentServer)
+            if name == '':
+                self.get_name()
+            else:
+                self.name = name
+                self.sock = connect(self.name, currentServer)
 
-            thread = Thread(target=self.handle_chat)
-            thread.start()
+                thread = Thread(target=self.handle_chat)
+                thread.start()
         else:
             box = QMessageBox()
             box.setText('Ухади')
@@ -102,13 +116,12 @@ class App(QtWidgets.QMainWindow, Form):
 
                         self.lines.append(payload["sender"] + ": " + payload["text"])
                         self.show_lines()
-                except e:
-                    self.lines.append(e)
-                    self.show_lines()
+                except:
+                    print("error")
 
-            except e:
-                self.lines.append(e)
-                self.show_lines()
+
+            except:
+                print("error")
 
     def on_file_click(self):
         filename, filetype = QFileDialog.getOpenFileName(self,

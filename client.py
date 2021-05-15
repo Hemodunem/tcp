@@ -4,13 +4,16 @@ from time import time
 
 working = True
 
+
 def is_stopped():
     global working
     return not working
 
+
 def stop():
     global working
     working = False
+
 
 def ip4_addresses():
     ip_list = []
@@ -21,7 +24,6 @@ def ip4_addresses():
 
 
 def find_servers(on_find):
-
     broadcast = ([ip for ip in ip4_addresses() if ip.startswith("192.168")][0], 5555)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -34,8 +36,9 @@ def find_servers(on_find):
         sock.sendto(b"memes", broadcast)
         sock.settimeout(2)
         t = time()
-        while t + 3 > time():
+        while t + 1 > time():
             if not working:
+                on_find(None, None)
                 return
             try:
                 name, addr = sock.recvfrom(1024)
@@ -47,7 +50,6 @@ def find_servers(on_find):
                 on_find(name, addr)
             except socket.timeout:
                 pass
-
 
 
 def connect(name, server):
