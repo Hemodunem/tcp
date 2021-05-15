@@ -9,7 +9,7 @@ def packet(packet_type, payload):
 
 
 def serialize(data):
-    return bytes(json.dumps(data) + '\n\n\n', "utf8")
+    return bytes(json.dumps(data), "utf8")
 
 
 def unserialize(buffer):

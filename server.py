@@ -1,5 +1,6 @@
 import socket
 from threading import Thread
+from uuid import uuid4
 
 from packet_manager import unserialize, serialize
 
@@ -32,8 +33,10 @@ def handle_client(client_name, client_sock):
 
                 if packet_type == "message":
                     print(f"[{client_name}]: " + payload["text"])
+                    payload["sender"] = client_name
+                    payload["uuid"] = str(uuid4())
 
-                    send_all_except([client_sock], serialize(packet))
+                    send_all(serialize(packet))
                 elif packet_type == "file":
                     print(f"[{client_name}]: отправил файл (ID: {payload['file_id']})")
 
@@ -100,7 +103,7 @@ if __name__ == "__main__":
 
         name = conn.recv(1024).decode("utf8")
 
-        add_client(name,conn)
+        add_client(name, conn)
 
         print(f"[{name}]", "Connected!")
         Thread(target=handle_client, args=[name, conn]).start()

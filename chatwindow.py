@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QInputDialog, QMessageBox, QFileDialog
 
 from client import connect, find_servers, stop, is_stopped
-from packet_manager import message_packet, file_packet, serialize, packet
+from packet_manager import message_packet, file_packet, serialize, packet, unserialize
 
 currentServer = ('0.0.0.0', 5555)
 
@@ -35,7 +35,6 @@ class ServersWindow(QtWidgets.QMainWindow, Form1):
 
         thread = Thread(target=find_servers, args=[self.on_find_server])
         thread.start()
-
 
     def on_click(self):
         global currentServer
@@ -66,13 +65,15 @@ class App(QtWidgets.QMainWindow, Form):
         self.message.setFocusPolicy(Qt.StrongFocus)
         self.message.returnPressed.connect(self.on_click)
         self.sock = None
+        self.name = ""
         self.lines = []
 
     def get_name(self):
         global currentServer
         name, ok = QInputDialog.getText(self, 'Input Dialog', 'Enter your name:')
         if ok:
-            self.sock = connect(name, currentServer)
+            self.name = name
+            self.sock = connect(self.name, currentServer)
 
             thread = Thread(target=self.handle_chat)
             thread.start()
@@ -92,16 +93,23 @@ class App(QtWidgets.QMainWindow, Form):
 
                 try:
                     packet = unserialize(data)
+                    packet_type = packet["type"]
+                    payload = packet["payload"]
 
-                    if packet.type == "message":
-                        self.lines.append(packet.payload.text)
+                    if packet_type == "message":
+                        if payload["sender"] == self.name:
+                            return
 
-                except:
-                    self.lines.append(raw)
+                        self.lines.append(payload["sender"] + ": " + payload["text"])
+                        self.show_lines()
+                except e:
+                    self.lines.append(e)
+                    self.show_lines()
 
+            except e:
+                self.lines.append(e)
                 self.show_lines()
-            except:
-                pass
+
     def on_file_click(self):
         filename, filetype = QFileDialog.getOpenFileName(self,
                                                          "Выбрать файл",
@@ -125,7 +133,6 @@ class App(QtWidgets.QMainWindow, Form):
                     break
                 self.sock.sendall(bytes_read)
                 aee += len(bytes_read)
-
 
         print(str(aee))
 
