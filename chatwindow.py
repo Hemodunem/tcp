@@ -36,15 +36,17 @@ class ServersWindow(QtWidgets.QMainWindow, Form1):
         thread = Thread(target=find_servers, args=[self.on_find_server])
         thread.start()
 
-
     def on_click(self):
         global currentServer
         items = self.serversView.selectedItems()
         if len(items) < 1:
+            addr = self.ipLine.text().split(':')
+            currentServer = (addr[0], int(addr[1]))
+        else:
+            name = items[0].text()
+            currentServer = self.servers[name]
+        if currentServer is None:
             return
-
-        name = items[0].text()
-        currentServer = self.servers[name]
 
         main_window.show()
         main_window.get_name()
